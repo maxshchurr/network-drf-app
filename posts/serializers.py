@@ -5,7 +5,7 @@ from .models import Post
 class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['title', 'body']
+        fields = ['id', 'title', 'body']
 
     def create(self, validated_data):
         return Post.objects.create(**validated_data)
