@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from datetime import datetime
 
+from users.permissions import IsInNetworkUsersGroup
 
 from posts.models import Post
 from posts.serializers import PostCreateSerializer, PostListSerializer
@@ -13,7 +14,7 @@ from posts.serializers import PostCreateSerializer, PostListSerializer
 
 class CreatePost(generics.CreateAPIView):
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsInNetworkUsersGroup)
     serializer_class = PostCreateSerializer
 
     def perform_create(self, serializer):
@@ -21,7 +22,7 @@ class CreatePost(generics.CreateAPIView):
 
 
 class PostList(generics.ListAPIView):
-    authentication_classes = (JWTAuthentication, )
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     queryset = Post.objects.all()
     serializer_class = PostListSerializer
@@ -33,14 +34,14 @@ class PostInfo(generics.RetrieveAPIView):
     serializer_class = PostListSerializer
 
 
-class PostLike(generics.UpdateAPIView):
+class PostLike(generics.RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated,)
     queryset = Post.objects.all()
     serializer_class = PostListSerializer
 
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
-
         if user not in instance.liked_by.all():
             instance.liked_by.add(user)
         else:
@@ -79,7 +80,6 @@ class LikesAnalyticsView(APIView):
             )
 
         analytics_data = Post.objects.likes_analytics(date_from_str, date_to_str)
-        print(analytics_data)
 
         if analytics_data:
             return JsonResponse(

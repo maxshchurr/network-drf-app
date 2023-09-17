@@ -12,6 +12,8 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
 
 class PostListSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ['username', 'title', 'body', 'created_at', 'liked_by']
